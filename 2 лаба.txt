@@ -1,0 +1,97 @@
+library(ggplot2)
+
+solution = function(h) {
+  a = -0.2
+  b = 0.8
+  N = (b - a) / h
+  Ua = 0.7
+  Ub = 0.1
+  x = seq(from = -0.2, to = 0.8, by = h)
+  U = seq(along.with = x)
+
+  
+  seq_a = seq(along.with = x)
+  seq_a[1] = 0
+  seq_a[N + 1] = 0 
+  for (i in 2:N) {
+    seq_a[i] = ai(x[i], h)
+  }
+  seq_b = seq(along.with = x)
+  seq_b[1] = 1
+  seq_b[N + 1] = 1
+  for (i in 2:N) {
+    seq_b[i] = bi(x[i], h)
+  }
+  seq_c = seq(along.with = x)
+  seq_c[1] = 0
+  seq_c[N + 1] = 0
+  for (i in 2:N) {
+    seq_c[i] = ci(x[i], h)
+  }
+  seq_f = seq(along.with = x)
+  seq_f[1] = Ua
+  seq_f[N + 1] = Ub
+  for (i in 2:N) {
+    seq_f[i] = fi(x[i], h)
+  }
+  
+  alpha = seq(along.with = x)
+  beta = seq(along.with = x)
+  alpha[1] = (-1) * seq_c[1] / seq_b[1]
+   
+  beta[1] = seq_f[1] / seq_b[1]
+   
+  for (i in 2:(N+1)) {
+    alpha[i] = (-1) * seq_c[i] / (seq_a[i] * alpha[i - 1] + seq_b[i])
+    beta[i] = (seq_f[i] - seq_a[i] * beta[i - 1]) / (seq_a[i] * alpha[i - 1] + seq_b[i])
+  }
+  U[N+1]=(seq_f[N+1] + seq_a[N+1] * beta[N]) / (seq_a[N+1] * alpha[N] + seq_b[N+1])
+  for (i in N:2) {
+    U[i] = alpha[i] * U[i + 1] + beta[i]
+  }
+  
+  df = data.frame(x = x, u = U)
+  g = ggplot(df,aes(x)) + geom_line(aes(y=u),col='black')
+  print(g)
+}
+
+A = function(x) {
+  r = cos(2 + x)
+  return(r);
+}
+
+B = function(x) {
+  r = exp((x-3)/3)
+  return(r);
+}
+
+C = function(x) {
+  r = (sin(x-1/2))*(sin(x-1/2))
+  return(r)
+}
+
+f = function(x) {
+  r = 1 - abs((sin(2*x)))
+  return(r)
+}
+
+ai = function(x, h) {
+  r = (-1) * (2 * A(x) + h * B(x))
+  return(r)
+}
+
+bi = function(x, h) {
+  r = 4 * A(x) + 2 * (h^2) * C(x)
+  return(r)
+}
+
+ci = function(x, h) {
+  r = (-1) * (2 * A(x) - h * B(x))
+  return(r)
+}
+
+fi = function(x, h) {
+  r = 2 * (h^2) * f(x)
+  return(r)
+}
+solution(1/100)
